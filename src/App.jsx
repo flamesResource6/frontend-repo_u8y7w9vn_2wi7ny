@@ -1,261 +1,196 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import Spline from '@splinetool/react-spline'
-import { Calendar as CalendarIcon, ArrowRight, Sparkles, Phone, Mail, Clock, MapPin } from 'lucide-react'
+import React from 'react'
 
-function useClock() {
-  const [now, setNow] = useState(new Date())
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(t)
-  }, [])
-  return now
-}
-
-function getMonthMatrix(date) {
-  const y = date.getFullYear()
-  const m = date.getMonth()
-  const firstDay = new Date(y, m, 1)
-  const lastDay = new Date(y, m + 1, 0)
-  const startWeekDay = (firstDay.getDay() + 6) % 7 // make Monday=0
-  const daysInMonth = lastDay.getDate()
-
-  const matrix = []
-  let week = []
-
-  // leading blanks
-  for (let i = 0; i < startWeekDay; i++) {
-    week.push(null)
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    week.push(new Date(y, m, d))
-    if (week.length === 7) {
-      matrix.push(week)
-      week = []
-    }
-  }
-  if (week.length) {
-    while (week.length < 7) week.push(null)
-    matrix.push(week)
-  }
-  return matrix
-}
-
-const Badge = ({ children }) => (
-  <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-xs tracking-wide text-cyan-200 backdrop-blur-md">
-    <Sparkles size={14} className="text-cyan-300" />
-    {children}
-  </div>
-)
-
-const Stat = ({ value, label }) => (
-  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-    <div className="text-3xl md:text-4xl font-semibold text-white drop-shadow-[0_0_12px_rgba(56,189,248,0.35)]">
-      {value}
-    </div>
-    <div className="mt-1 text-sm text-cyan-100/70">{label}</div>
-  </div>
+const NavItem = ({ label, active }) => (
+  <a
+    href={`#${label.toLowerCase()}`}
+    className={[
+      'relative px-4 py-2 text-sm tracking-wide uppercase',
+      'transition-colors duration-200',
+      active ? 'text-white' : 'text-white/70 hover:text-white',
+    ].join(' ')}
+  >
+    <span className={[
+      'relative',
+      active ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : '',
+    ].join(' ')}>
+      {label}
+    </span>
+    {active && (
+      <span className="pointer-events-none absolute -bottom-1 left-1/2 h-px w-8 -translate-x-1/2 bg-white/80 shadow-[0_0_12px_2px_rgba(255,255,255,0.45)]" />
+    )}
+  </a>
 )
 
 export default function App() {
-  const now = useClock()
-  const [selected, setSelected] = useState(new Date())
-  const calendarMatrix = useMemo(() => getMonthMatrix(now), [now])
-
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const dateStr = now.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' })
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-white">
-      {/* Spline cosmic background */}
-      <div className="absolute inset-0">
-        <Spline scene="https://prod.spline.design/7m4PRZ7kg6K1jPfF/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+    <div className="relative min-h-screen bg-black text-white antialiased">
+      {/* Frame borders */}
+      <div className="pointer-events-none absolute inset-4 rounded-xl border border-white/10" />
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <div
+          className="absolute inset-4 rounded-xl"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)',
+            backgroundSize: '80px 80px',
+            maskImage: 'radial-gradient(100% 100% at 50% 50%, black, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(100% 100% at 50% 50%, black, transparent 70%)',
+            opacity: 0.08,
+          }}
+        />
       </div>
 
-      {/* Subtle grid lines overlay */}
-      <div className="pointer-events-none absolute inset-0 opacity-20" aria-hidden>
-        <div className="absolute inset-0" style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(59,130,246,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.08) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
-        }} />
+      {/* Subtle stars/grain */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.12] mix-blend-screen" aria-hidden>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.6), rgba(255,255,255,0)), \
+               radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.6), rgba(255,255,255,0)), \
+               radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.6), rgba(255,255,255,0)), \
+               radial-gradient(1px 1px at 85% 75%, rgba(255,255,255,0.6), rgba(255,255,255,0))',
+          }}
+        />
       </div>
 
-      {/* Cosmic gradient glows */}
-      <div className="pointer-events-none absolute inset-0"> 
-        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-[28rem] w-[28rem] rounded-full bg-indigo-500/20 blur-3xl" />
-      </div>
+      {/* Top Navigation with tech tab shape */}
+      <header className="relative z-10 flex items-center justify-center px-6 pt-8">
+        <nav className="relative">
+          {/* Angular tab container */}
+          <div
+            className="relative mx-auto flex items-center justify-center gap-1 px-3 py-1"
+            style={{
+              clipPath: 'polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px)',
+              border: '1px solid rgba(255,255,255,0.16)',
+              background:
+                'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))',
+              boxShadow:
+                'inset 0 1px 0 rgba(255,255,255,0.15), 0 0 0 1px rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            {/* Left + */}
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 select-none text-xs text-white/60">+</span>
 
-      {/* Top HUD: coordinates + clock */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-5 md:px-10">
-        <div className="flex items-center gap-3 text-cyan-100/80">
-          <MapPin size={16} className="text-cyan-300" />
-          <span className="font-mono text-xs md:text-sm">IND 50° 27' N · 30° 31' E</span>
-        </div>
-        <div className="flex items-center gap-3 text-cyan-100/80">
-          <Clock size={16} className="text-cyan-300" />
-          <span className="font-mono text-xs md:text-sm">{dateStr} · {timeStr} IST</span>
-        </div>
-      </div>
-
-      {/* Hero content */}
-      <main className="relative z-10 px-6 pb-24 pt-4 md:px-10 md:pt-10">
-        <section className="mx-auto max-w-7xl">
-          {/* Headline + CTA */}
-          <div className="mb-8 flex flex-col items-start gap-6 md:mb-12 md:flex-row md:items-center md:justify-between">
-            <div>
-              <Badge>Futuristic · Elegant · Immersive</Badge>
-              <h1 className="mt-4 text-3xl leading-tight md:text-5xl lg:text-6xl font-semibold">
-                <span className="bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_24px_rgba(34,211,238,0.35)]">We create memorable</span>
-                <br />
-                <span className="text-white/90">digital experiences.</span>
-              </h1>
-              <p className="mt-4 max-w-2xl text-cyan-100/80">
-                A cosmic blend of Daft Punk attitude and Apple-grade precision. Interfaces that feel liquid, alive, and effortlessly usable.
-              </p>
+            {/* Nav items */}
+            <div className="flex items-center gap-1">
+              {[
+                { label: 'Home', active: true },
+                { label: 'Works' },
+                { label: 'Awards' },
+                { label: 'Team' },
+                { label: 'Prices' },
+                { label: 'Contacts' },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="relative"
+                  style={{
+                    clipPath:
+                      'polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px)',
+                  }}
+                >
+                  <div className="mx-0.5 rounded-md border border-white/10 bg-white/0 px-1.5">
+                    <NavItem label={item.label} active={item.active} />
+                  </div>
+                  {/* metallic edges */}
+                  <span className="pointer-events-none absolute inset-0 rounded-md ring-1 ring-white/10" />
+                  <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/20 opacity-60" />
+                </div>
+              ))}
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <a href="#works" className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-medium text-white shadow-[0_0_0_2px_rgba(255,255,255,0.06)] ring-1 ring-white/20 transition hover:shadow-[0_0_32px_rgba(34,211,238,0.45)]">
-                View Works
-                <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
-              </a>
-              <a href="#consult" className="inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-white/5 px-5 py-3 text-sm font-medium text-cyan-100 backdrop-blur-md hover:bg-white/10">
-                Get Consultation
-                <Phone size={16} />
-              </a>
-              <a href="#contact" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/30 px-5 py-3 text-sm font-medium text-white/90 backdrop-blur-md hover:bg-white/10">
-                Contact
-                <Mail size={16} />
-              </a>
-            </div>
+
+            {/* Right + */}
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 select-none text-xs text-white/60">+</span>
+          </div>
+        </nav>
+      </header>
+
+      {/* Branding + hero */}
+      <main className="relative z-10 mx-auto max-w-6xl px-6 pb-32 pt-20">
+        <section className="flex flex-col items-start gap-6">
+          <div className="inline-flex items-center gap-3">
+            <span className="font-mono text-xs uppercase tracking-[0.25em] text-white/60">v0.9.3</span>
+            <span className="h-1 w-1 rounded-full bg-white/50" />
+            <span className="font-mono text-xs text-white/50">LAT 40.71 · LON -74.00</span>
+            <span className="h-1 w-1 rounded-full bg-white/50" />
+            <span className="font-mono text-xs text-white/50">UTC {new Date().toUTCString().slice(17, 22)}</span>
           </div>
 
-          {/* Bento grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-6">
-            {/* Intro card */}
-            <div className="group relative col-span-1 overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:col-span-3">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-transparent to-blue-500/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="relative">
-                <h3 className="text-xl md:text-2xl font-semibold">Immersive UI Systems</h3>
-                <p className="mt-2 max-w-lg text-cyan-100/80">
-                  We architect fluid interfaces with soft glassmorphism, depth, and motion — crafted for clarity and delight across every touchpoint.
-                </p>
-                <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-black/30 px-4 py-2 text-xs text-cyan-100/90 backdrop-blur">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400 shadow-[0_0_12px_2px_rgba(34,211,238,0.7)]" />
-                  Realtime collaboration enabled
-                </div>
-              </div>
-            </div>
+          <h1 className="text-5xl leading-[1.05] tracking-tight md:text-7xl">
+            <span className="block font-light text-white/90">COSMOS</span>
+            <span className="block font-semibold text-white">STUDIO</span>
+          </h1>
 
-            {/* Stats card */}
-            <div className="relative col-span-1 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:col-span-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <div className="mb-4 flex items-center gap-2 text-cyan-200">
-                <Sparkles size={16} className="text-cyan-300" /> Impact Metrics
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Stat value="50+" label="Projects" />
-                <Stat value="258+" label="Members" />
-                <Stat value="12" label="Awards" />
-                <Stat value="8yrs" label="Experience" />
-              </div>
-            </div>
+          <p className="max-w-2xl text-lg text-white/70">
+            A creative UI/UX practice crafting precise, elegant, and futuristic interfaces. Minimal cosmic aesthetics. Maximal clarity.
+          </p>
 
-            {/* Calendar / booking */}
-            <div id="consult" className="relative col-span-1 overflow-hidden rounded-3xl border border-cyan-300/20 bg-white/5 p-6 backdrop-blur-xl md:col-span-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <div className="absolute -right-24 -top-24 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl" aria-hidden />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-cyan-100">
-                  <CalendarIcon size={18} className="text-cyan-300" />
-                  <span className="font-medium">Book a free consultation</span>
-                </div>
-                <div className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-cyan-200/80">
-                  {now.toLocaleString([], { month: 'long', year: 'numeric' })}
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs text-cyan-200/80">
-                {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-                  <div key={d} className="py-1 opacity-70">{d}</div>
-                ))}
-              </div>
-              <div className="mt-1 grid grid-cols-7 gap-2">
-                {calendarMatrix.flat().map((d, i) => {
-                  const isToday = d && d.toDateString() === new Date().toDateString()
-                  const isSelected = d && selected && d.toDateString() === selected.toDateString()
-                  return (
-                    <button
-                      key={i}
-                      disabled={!d}
-                      onClick={() => d && setSelected(d)}
-                      className={[
-                        'aspect-square rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-cyan-400/60',
-                        d ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-transparent',
-                        isSelected ? 'bg-cyan-500/30 border-cyan-300/40 shadow-[0_0_24px_rgba(34,211,238,0.35)]' : '',
-                        isToday && !isSelected ? 'ring-1 ring-cyan-300/40' : '',
-                      ].join(' ')}
-                    >
-                      <span className={[
-                        'text-sm',
-                        isSelected ? 'text-white' : 'text-cyan-100/90',
-                      ].join(' ')}>
-                        {d ? d.getDate() : ''}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div className="mt-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
-                <div className="text-cyan-100/80">
-                  Selected: <span className="font-mono text-cyan-200">{selected.toDateString()}</span>
-                </div>
-                <a href="#contact" className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-[0_0_0_2px_rgba(255,255,255,0.06)] ring-1 ring-white/20 transition hover:shadow-[0_0_28px_rgba(34,211,238,0.45)]">
-                  Confirm Free Call
-                  <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
-                </a>
-              </div>
-            </div>
-
-            {/* Showcase / Works CTA */}
-            <div id="works" className="relative col-span-1 overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:col-span-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <div className="absolute inset-0 pointer-events-none" style={{
-                background:
-                  'radial-gradient(600px 180px at 20% 20%, rgba(34,211,238,0.15), transparent 50%), radial-gradient(600px 180px at 80% 80%, rgba(59,130,246,0.12), transparent 50%)',
-              }} />
-              <div className="relative">
-                <h3 className="text-xl font-semibold">Signature Workflows</h3>
-                <p className="mt-2 max-w-xl text-cyan-100/80">
-                  Modular bento systems, liquid transitions, and tactile interactions tuned for premium brands.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {['Bento Systems','Motion Design','Design Systems','3D & WebGL'].map(tag => (
-                    <span key={tag} className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-cyan-100/80 backdrop-blur">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Contact card */}
-            <div id="contact" className="col-span-1 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:col-span-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-              <h3 className="text-xl font-semibold">Let’s build the future</h3>
-              <p className="mt-2 text-cyan-100/80">Tell us about your vision. We’ll craft a plan in 24 hours.</p>
-              <form className="mt-4 space-y-3">
-                <input placeholder="Your email" type="email" className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm placeholder:text-cyan-200/50 focus:border-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/30" />
-                <textarea placeholder="Project brief" rows={3} className="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm placeholder:text-cyan-200/50 focus:border-cyan-400/40 focus:outline-none focus:ring-2 focus:ring-cyan-400/30" />
-                <button type="button" className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-medium text-white ring-1 ring-white/20 hover:shadow-[0_0_28px_rgba(34,211,238,0.45)]">
-                  Send Inquiry
-                  <ArrowRight size={16} />
-                </button>
-              </form>
-            </div>
+          <div className="mt-4 inline-flex flex-wrap items-center gap-3">
+            {['Futuristic UI', 'Cosmic Minimalism', 'Tech Dashboard', 'Dark Mode Elegance'].map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/70"
+              >
+                {t}
+              </span>
+            ))}
           </div>
+        </section>
+
+        {/* Divider */}
+        <div className="mt-16 h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+        {/* Minimal feature grid */}
+        <section className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {[
+            { title: 'Design Systems', desc: 'Scalable components, tokens, and motion tuned for premium brands.' },
+            { title: 'Interactive Prototypes', desc: 'High-fidelity flows with tactile micro-interactions.' },
+            { title: '3D + WebGL Touches', desc: 'Tasteful depth and light without the noise.' },
+          ].map((card) => (
+            <div
+              key={card.title}
+              className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-5"
+            >
+              <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                   style={{ background: 'radial-gradient(400px 120px at 20% 0%, rgba(255,255,255,0.08), transparent 60%)' }} />
+              <h3 className="text-lg font-medium text-white">{card.title}</h3>
+              <p className="mt-2 text-sm text-white/70">{card.desc}</p>
+              <div className="mt-6 h-px w-full bg-white/10" />
+              <div className="mt-3 flex items-center justify-between text-xs text-white/50">
+                <span className="font-mono">READY</span>
+                <span className="font-mono">00:{Math.floor(Math.random()*59).toString().padStart(2,'0')}</span>
+              </div>
+            </div>
+          ))}
         </section>
       </main>
 
-      {/* Bottom subtle divider line */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+      {/* Floating CONTACT orb */}
+      <a
+        href="#contacts"
+        className="group fixed bottom-8 right-8 z-20"
+        aria-label="Contact"
+      >
+        <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-black/60">
+          {/* Halo */}
+          <span className="absolute -inset-2 rounded-full bg-white/20 blur-2xl opacity-50 group-hover:opacity-80 transition-opacity" />
+          {/* Ring */}
+          <span className="absolute inset-0 rounded-full ring-2 ring-white/70 shadow-[0_0_30px_rgba(255,255,255,0.55)]" />
+          {/* Inner */}
+          <span className="relative font-semibold tracking-wide text-white">CONTACT</span>
+        </div>
+      </a>
+
+      {/* Footer microtext */}
+      <footer className="pointer-events-none absolute bottom-4 left-0 right-0 z-10 flex items-center justify-center">
+        <div className="flex items-center gap-4 text-[10px] text-white/50">
+          <span className="font-mono">COSMOS STUDIO</span>
+          <span>—</span>
+          <span className="font-mono">BUILD {new Date().toISOString().slice(0,10).replace(/-/g,'.')}</span>
+        </div>
+      </footer>
     </div>
   )
 }
